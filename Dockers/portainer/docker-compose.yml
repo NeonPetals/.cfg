@@ -1,0 +1,36 @@
+
+services:
+  traefik:
+    image: "traefik:latest"
+    restart: always
+    command:
+     - --api.insecure=true
+     - --providers.docker
+     - --entrypoints.web.address=:80
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.http.routers.traefic.rule=Host(`traefic.localhost`)"
+      - "traefik.http.services.traefic.loadbalancer.server.port=8080"
+  
+  portainer:
+    image: portainer/portainer-ce:latest
+    stdin_open: true
+    tty: true
+    command:
+      -H unix:///var/run/docker.sock
+      --admin-password "$$2y$$05$$arC5e4UbRPxfR68jaFnAAe1aL7C1U03pqfyQh49/9lB9lqFxLfBqS"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+volumes:
+  portainer_data:
+
